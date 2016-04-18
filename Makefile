@@ -10,5 +10,6 @@ install:
 uninstall:
 	rm -f /usr/bin/indicator-simple
 	rm -f /usr/share/applications/indicator-simple.desktop
+	rm -f /etc/xdg/autostart/indicator-simple.desktop
 
 .PHONY: install uninstall
