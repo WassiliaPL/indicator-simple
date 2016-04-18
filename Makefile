@@ -5,6 +5,7 @@ all:
 install:
 	install indicator-simple /usr/bin
 	install indicator-simple.desktop /usr/share/applications
+	install indicator-simple.desktop /etc/xdg/autostart
 
 uninstall:
 	rm -f /usr/bin/indicator-simple
