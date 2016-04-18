@@ -3,9 +3,11 @@ all:
 	@echo "Type 'make uninstall' (root) to uninstall"
 
 install:
-	install indicator-simple $(DESTDIR)/usr/bin
+	install indicator-simple /usr/bin
+	install indicator-simple.desktop /usr/share/applications
 
 uninstall:
-	rm -f $(DESTDIR)/usr/bin/indicator-simple
+	rm -f /usr/bin/indicator-simple
+	rm -f /usr/share/applications/indicator-simple.desktop
 
 .PHONY: install uninstall

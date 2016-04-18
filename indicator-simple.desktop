@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Indicator
+GenericName=Indicator
+Comment=Simple indicator
+Exec=indicator-simple
+Terminal=false
+Type=Application
+Icon=gnome-system-monitor
+Categories=Utility;
+StartupNotify=false
+Name[pl]=Prosty Indicator
+X-GNOME-autostart-enabled=true
