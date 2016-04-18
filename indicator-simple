@@ -12,7 +12,7 @@ class MainClass:
 	#def __init__(self):
 
 	def update(self, arg):
-		self.indicator.set_label(self.get_minifetch(), "")
+		self.indicator.set_label(self.get_data(), "Data")
 		return True
 
 
@@ -48,16 +48,16 @@ class MainClass:
 		self.menu.show_all()
 		return self.menu
 
-	def get_minifetch(self):
-		self.kernel = commands.getoutput('date')
-		return self.kernel
-	
+	def get_data(self):
+		self.data = "Date: " + commands.getoutput('date') + " / Uptime: " + commands.getoutput('uptime -p')
+		return self.data
+
 	def quit(self, arg):
 		Notify.uninit()
 		Gtk.main_quit()
 
 	def main(self):
-		self.indicator = AppIndicator3.Indicator.new(APPINDICATOR_ID, os.path.abspath('unnamed.png'), AppIndicator3.IndicatorCategory.SYSTEM_SERVICES)
+		self.indicator = AppIndicator3.Indicator.new(APPINDICATOR_ID, 'shutter-panel', AppIndicator3.IndicatorCategory.SYSTEM_SERVICES)
 		self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
 		self.indicator.set_menu(self.build_menu())
 
