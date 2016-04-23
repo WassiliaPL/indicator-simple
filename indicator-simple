@@ -14,8 +14,9 @@ APPINDICATOR_ID = 'monitor'
 
 INTERVAL_INDICATOR_LABEL = 1
 INTERVAL_ITEM_TEMP_LABEL = 3
-INTERVAL_ITEM_SONG_LABEL = 10
+INTERVAL_ITEM_SONG_LABEL = 8
 INTERVAL_ITEM_DISK_LABEL = 10
+INTERVAL_ITEM_PING_LABEL = 12
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -37,6 +38,10 @@ class MainClass:
 		self.item_disk.set_label(self.get_disk())
 		return True
 
+	def update_item_ping_label(self, arg):
+		self.item_ping.set_label(self.get_ping())
+		return True
+
 	def build_menu(self):
 		#building menu
 		self.menu = Gtk.Menu()
@@ -52,6 +57,10 @@ class MainClass:
 		self.item_song = Gtk.MenuItem(self.get_song())
 		self.menu.append(self.item_song)
 		self.item_song.set_sensitive(False)
+
+		self.item_ping = Gtk.MenuItem(self.get_ping())
+		self.menu.append(self.item_ping)
+		self.item_ping.set_sensitive(False)
 
 		self.item_quit = Gtk.MenuItem('Quit')
 		self.item_quit.connect('activate', self.quit)
@@ -70,7 +79,7 @@ class MainClass:
 		return self.temp
 
 	def get_song(self):
-		self.song = "Song: " + commands.getoutput('mpc current')
+		self.song = "SONG: " + commands.getoutput('mpc current')
 		return self.song
 
 	def get_disk(self):
@@ -83,13 +92,18 @@ class MainClass:
 		out = "FREE SPACE: " + '%s' % free + "GB / " + '%s' % total + "GB"
 		return out
 
+	def get_ping(self):
+		raw = commands.getoutput("ping -c1 google.com |grep 'time='")
+		ping = "PING: " + raw.split("time=",1)[1]
+		return ping
+
 	def quit(self, arg):
 		#quiting whole app
 		Gtk.main_quit()
 
 	def main(self):
 		#indicator init
-		self.indicator = AppIndicator3.Indicator.new(APPINDICATOR_ID, 'shutter-panel', AppIndicator3.IndicatorCategory.SYSTEM_SERVICES)
+		self.indicator = AppIndicator3.Indicator.new(APPINDICATOR_ID, 'indicator-cpufreq', AppIndicator3.IndicatorCategory.SYSTEM_SERVICES)
 		self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
 		self.indicator.set_menu(self.build_menu())
 
@@ -98,6 +112,7 @@ class MainClass:
 		GLib.timeout_add_seconds(INTERVAL_ITEM_TEMP_LABEL, self.update_item_temp_label, self.indicator)
 		GLib.timeout_add_seconds(INTERVAL_ITEM_SONG_LABEL, self.update_item_song_label, self.indicator)
 		GLib.timeout_add_seconds(INTERVAL_ITEM_DISK_LABEL, self.update_item_disk_label, self.indicator)
+		GLib.timeout_add_seconds(INTERVAL_ITEM_PING_LABEL, self.update_item_ping_label, self.indicator)
 
 		#main
 		Gtk.main()
