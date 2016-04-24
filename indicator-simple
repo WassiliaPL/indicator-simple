@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import signal, os, gi, psutil, re, time
+import signal, os, gi, psutil, re
 try:
 	import commands
 except:
@@ -14,15 +14,14 @@ APPINDICATOR_ID = 'monitor'
 
 INTERVAL_INDICATOR_LABEL = 1
 INTERVAL_ITEM_TEMP_LABEL = 3
-INTERVAL_ITEM_SONG_LABEL = 8
-INTERVAL_ITEM_DISK_LABEL = 10
-INTERVAL_ITEM_PING_LABEL = 12
+INTERVAL_ITEM_SONG_LABEL = 6
+INTERVAL_ITEM_DISK_LABEL = 20
+INTERVAL_ITEM_PING_LABEL = 8
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 class MainClass:
 	def update_indicator_label(self, arg):
-		#updating indicator label
 		self.indicator.set_label(self.get_cpu_load(), "")
 		return True
 
@@ -93,7 +92,7 @@ class MainClass:
 		return out
 
 	def get_ping(self):
-		raw = commands.getoutput("ping -c1 google.com |grep 'time='")
+		raw = commands.getoutput("ping -c1 8.8.8.8 |grep 'time='")
 		ping = "PING: " + raw.split("time=",1)[1]
 		return ping
 
