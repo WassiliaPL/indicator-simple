@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import signal, os, gi, psutil, re
+import signal, os, gi, psutil, re, time
 try:
 	import commands
 except:
@@ -70,17 +70,17 @@ class MainClass:
 		return self.menu
 
 	def get_cpu_load(self):
-		self.rounding = '%.0f' % psutil.cpu_percent()
-		self.cpu_load = "CPU: " + '%s' % self.rounding + "%"
-		return self.cpu_load
+		rounding = '%.0f' % psutil.cpu_percent()
+		cpu = "CPU: " + str(rounding) + "%"
+        	return cpu
 
 	def get_temp(self):
-		self.temp = "CPU TEMP: " + commands.getoutput('cat /sys/class/thermal/thermal_zone0/temp |cut -c 1-2') + " °C"
-		return self.temp
+		temp = "CPU TEMP: " + commands.getoutput('cat /sys/class/thermal/thermal_zone0/temp |cut -c 1-2') + " °C"
+		return temp
 
 	def get_song(self):
-		self.song = "SONG: " + commands.getoutput('mpc current')
-		return self.song
+		song = "SONG: " + commands.getoutput('mpc -h 192.168.1.100 current')
+		return song
 
 	def get_disk(self):
 		formatted = '{0}'.format(psutil.disk_usage('/'))
