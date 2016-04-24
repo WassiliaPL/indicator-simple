@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Indicator
-GenericName=Indicator
+Name=Simple Indicator
+GenericName=Simple Indicator
 Comment=Simple indicator
 Exec=indicator-simple
 Terminal=false
