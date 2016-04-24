@@ -92,8 +92,7 @@ class MainClass:
 		return out
 
 	def get_ping(self):
-		raw = commands.getoutput("ping -c1 8.8.8.8 |grep 'time='")
-		ping = "PING: " + raw.split("time=",1)[1]
+		ping = "PING: " + commands.getoutput("ping -c1 8.8.8.8 |awk '/time=/ {print $7, $8}' |cut -d'=' -f2")
 		return ping
 
 	def quit(self, arg):
