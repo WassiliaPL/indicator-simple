@@ -1,83 +1,149 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-import signal, os, json, gi
+import signal, os, gi, psutil, re
 try:
 	import commands
 except:
 	import subprocess as commands
-try:
-	from urllib2 import Request, urlopen, URLError
-except:
-	from urllib.request import Request, urlopen, URLError
 gi.require_version('Gtk', '3.0')
 gi.require_version('AppIndicator3', '0.1')
-gi.require_version('Notify', '0.7')
-from gi.repository import Gtk, GLib, AppIndicator3, Notify
+from gi.repository import Gtk, GLib, AppIndicator3
 
-APPINDICATOR_ID = 'jokes'
-INTERVAL = 1
+APPINDICATOR_ID = 'monitor'
+
+INTERVAL_INDICATOR_LABEL = 1
+INTERVAL_ITEM_TEMP_LABEL = 3
+INTERVAL_ITEM_TEMPB_LABEL = 3
+INTERVAL_ITEM_DISK_LABEL = 10
+INTERVAL_ITEM_PING_LABEL = 12
+INTERVAL_ITEM_RAM_LABEL = 5
+INTERVAL_ITEM_UPTIME_LABEL = 2
+
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 class MainClass:
-	#def __init__(self):
-
-	def update(self, arg):
-		self.indicator.set_label(self.get_data(), "Data")
+	def update_indicator_label(self, arg):
+		#updating indicator label
+		self.indicator.set_label(self.get_cpu_load(), "")
 		return True
 
+	def update_item_temp_label(self, arg):
+		self.item_temp.set_label(self.get_temp())
+		return True
 
-	def fetch_joke(self):
-		self.request = Request('http://api.icndb.com/jokes/random?limitTo=[nerdy]')
-		self.response = urlopen(self.request)
-		self.joke = json.loads(self.response.read())['value']['joke']
-		return self.joke
+	def update_item_tempb_label(self, arg):
+		self.item_tempb.set_label(self.get_tempb())
+		return True
 
-	def joke(self, arg):
-		Notify.Notification.new("<b>Random Joke:</b>", self.fetch_joke(), None).show()
+	def update_item_disk_label(self, arg):
+		self.item_disk.set_label(self.get_disk())
+		return True
 
-	def test(self, arg):
-		self.win = Gtk.Window()
-		#win.connect("delete-event", gtk.main_quit)
-		self.win.show_all()
+	def update_item_ping_label(self, arg):
+		self.item_ping.set_label(self.get_ping())
+		return True
+
+	def update_item_ram_label(self, arg):
+		self.item_ram.set_label(self.get_ram())
+		return True
+	def update_item_uptime_label(self, arg):
+		self.item_uptime.set_label(self.get_uptime())
+		return True
 
 	def build_menu(self):
+		#building menu
 		self.menu = Gtk.Menu()
 		
+		self.item_temp = Gtk.MenuItem(self.get_temp())
+		self.menu.append(self.item_temp)
+		self.item_temp.set_sensitive(False)
+
+		self.item_tempb = Gtk.MenuItem(self.get_tempb())
+		self.menu.append(self.item_tempb)
+		self.item_tempb.set_sensitive(False)
+
+		self.item_ram = Gtk.MenuItem(self.get_ram())
+		self.menu.append(self.item_ram)
+		self.item_ram.set_sensitive(False)
+
+		self.item_uptime = Gtk.MenuItem(self.get_uptime())
+		self.menu.append(self.item_uptime)
+		self.item_uptime.set_sensitive(False)
+
+		self.item_disk = Gtk.MenuItem(self.get_disk())
+		self.menu.append(self.item_disk)
+		self.item_disk.set_sensitive(False)
+
+		self.item_ping = Gtk.MenuItem(self.get_ping())
+		self.menu.append(self.item_ping)
+		self.item_ping.set_sensitive(False)
+
 		self.item_quit = Gtk.MenuItem('Quit')
 		self.item_quit.connect('activate', self.quit)
 		self.menu.append(self.item_quit)
-		
-		self.item_joke = Gtk.MenuItem('Joke')
-		self.item_joke.connect('activate', self.joke)
-		self.menu.append(self.item_joke)
-		
-		self.item_test = Gtk.MenuItem('Test')
-		self.item_test.connect('activate', self.test)
-		self.menu.append(self.item_test)
 
 		self.menu.show_all()
 		return self.menu
 
-	def get_data(self):
-		self.data = "Date: " + commands.getoutput('date') + " / Uptime: " + commands.getoutput('uptime -p')
-		return self.data
+	def get_cpu_load(self):
+		self.rounding = '%.0f' % psutil.cpu_percent()
+		self.cpu_load = "CPU: " + '%s' % self.rounding + "%"
+		return self.cpu_load
+
+	def get_temp(self):
+		self.temp = "CPU0 TEMP: " + commands.getoutput("sensors | grep 'Core 0' | awk '{print $3}' | cut -b2,3,4,5") + " °C"
+		return self.temp
+
+	def get_tempb(self):
+		self.tempb = "CPU1 TEMP: " + commands.getoutput("sensors | grep 'Core 2' | awk '{print $3}' | cut -b2,3,4,5") + " °C"
+		return self.tempb
+
+	def get_disk(self):
+		formatted = '{0}'.format(psutil.disk_usage('/'))
+		splitted = re.split(', ', formatted)
+		free_raw = splitted[2].split("free=",1)[1]
+		total_raw = splitted[0].split("total=",1)[1]
+		free = int(free_raw)/1020/1020/1020
+		total = int(total_raw)/1020/1020/1020
+		out = "FREE SPACE: " + '%s' % free + "GB / " + '%s' % total + "GB"
+		return out
+
+	def get_ping(self):
+		ping = "PING: " + commands.getoutput("ping -c1 8.8.8.8 |awk '/time=/ {print $7, $8}' |cut -d'=' -f2")
+		return ping
+
+	def get_ram(self):
+		available = commands.getoutput("free -m |grep 'cache' -A1 |awk '/:/ {print $7}'")
+		total = commands.getoutput("free -m |grep 'cache' -A1 |awk '/:/ {print $2}'")
+		used = str(int(total) - int(available))
+		ram = "USED RAM: " + used + "MB / " + total + "MB"
+		return ram
+
+	def get_uptime(self):
+		self.uptime = "UPTIME: " + commands.getoutput("uptime | grep 'up' | awk '{print $3}' | cut -b1,2,3,4")
+		return self.uptime
 
 	def quit(self, arg):
-		Notify.uninit()
+		#quiting whole app
 		Gtk.main_quit()
 
 	def main(self):
-		self.indicator = AppIndicator3.Indicator.new(APPINDICATOR_ID, 'shutter-panel', AppIndicator3.IndicatorCategory.SYSTEM_SERVICES)
+		#indicator init
+		self.indicator = AppIndicator3.Indicator.new(APPINDICATOR_ID, 'indicator-cpufreq', AppIndicator3.IndicatorCategory.SYSTEM_SERVICES)
 		self.indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
 		self.indicator.set_menu(self.build_menu())
 
-		#self.indicator.set_label(self.get_minifetch(), "")
-		#self.indicator.set_title(#function())
+		#labels updating section
+		GLib.timeout_add_seconds(INTERVAL_INDICATOR_LABEL, self.update_indicator_label, self.indicator)
+		GLib.timeout_add_seconds(INTERVAL_ITEM_TEMP_LABEL, self.update_item_temp_label, self.indicator)
+		GLib.timeout_add_seconds(INTERVAL_ITEM_TEMPB_LABEL, self.update_item_tempb_label, self.indicator)
+		GLib.timeout_add_seconds(INTERVAL_ITEM_DISK_LABEL, self.update_item_disk_label, self.indicator)
+		GLib.timeout_add_seconds(INTERVAL_ITEM_PING_LABEL, self.update_item_ping_label, self.indicator)
+		GLib.timeout_add_seconds(INTERVAL_ITEM_RAM_LABEL, self.update_item_ram_label, self.indicator)
+		GLib.timeout_add_seconds(INTERVAL_ITEM_UPTIME_LABEL, self.update_item_uptime_label, self.indicator)
 
-		self.update(self.indicator)
-		GLib.timeout_add_seconds(INTERVAL, self.update, self.indicator)
-
-		Notify.init(APPINDICATOR_ID)
+		#main
 		Gtk.main()
 
 if __name__ == "__main__":
