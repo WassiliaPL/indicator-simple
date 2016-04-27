@@ -14,9 +14,10 @@ APPINDICATOR_ID = 'monitor'
 
 INTERVAL_INDICATOR_LABEL = 1
 INTERVAL_ITEM_TEMP_LABEL = 3
-INTERVAL_ITEM_SONG_LABEL = 6
-INTERVAL_ITEM_DISK_LABEL = 20
-INTERVAL_ITEM_PING_LABEL = 8
+INTERVAL_ITEM_SONG_LABEL = 8
+INTERVAL_ITEM_DISK_LABEL = 30
+INTERVAL_ITEM_RAM_LABEL = 5
+INTERVAL_ITEM_PING_LABEL = 15
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -37,6 +38,10 @@ class MainClass:
 		self.item_disk.set_label(self.get_disk())
 		return True
 
+	def update_item_ram_label(self, arg):
+		self.item_ram.set_label(self.get_ram())
+		return True
+
 	def update_item_ping_label(self, arg):
 		self.item_ping.set_label(self.get_ping())
 		return True
@@ -52,6 +57,10 @@ class MainClass:
 		self.item_disk = Gtk.MenuItem(self.get_disk())
 		self.menu.append(self.item_disk)
 		self.item_disk.set_sensitive(False)
+
+		self.item_ram = Gtk.MenuItem(self.get_ram())
+		self.menu.append(self.item_ram)
+		self.item_ram.set_sensitive(False)
 
 		self.item_song = Gtk.MenuItem(self.get_song())
 		self.menu.append(self.item_song)
@@ -91,6 +100,13 @@ class MainClass:
 		out = "FREE SPACE: " + '%s' % free + "GB / " + '%s' % total + "GB"
 		return out
 
+	def get_ram(self):
+		available = commands.getoutput("free -m |grep 'cache' -A1 |awk '/:/ {print $7}'")
+		total = commands.getoutput("free -m |grep 'cache' -A1 |awk '/:/ {print $2}'")
+		used = str(int(total) - int(available))
+		ram = "USED RAM: " + used + "MB / " + total + "MB"
+		return ram
+
 	def get_ping(self):
 		ping = "PING: " + commands.getoutput("ping -c1 8.8.8.8 |awk '/time=/ {print $7, $8}' |cut -d'=' -f2")
 		return ping
@@ -111,6 +127,7 @@ class MainClass:
 		GLib.timeout_add_seconds(INTERVAL_ITEM_SONG_LABEL, self.update_item_song_label, self.indicator)
 		GLib.timeout_add_seconds(INTERVAL_ITEM_DISK_LABEL, self.update_item_disk_label, self.indicator)
 		GLib.timeout_add_seconds(INTERVAL_ITEM_PING_LABEL, self.update_item_ping_label, self.indicator)
+		GLib.timeout_add_seconds(INTERVAL_ITEM_RAM_LABEL, self.update_item_ram_label, self.indicator)
 
 		#main
 		Gtk.main()
